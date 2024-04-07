@@ -1,0 +1,177 @@
+int state;
+int buffer[32768];
+
+int getrandom(void) {
+    state = state + (state * 8192);
+    state = state + (state / 131072);
+    state = state + (state * 32);
+    return state;
+}
+int remainder(int x, int y) {
+    int t;
+    t = x / y;
+    return x - y * t;
+}
+
+int rotlone(int x) { return x * 2 + remainder(x, 2); }
+
+int rotlfive(int x) { return x * 32 + remainder(x, 32); }
+
+int rotlthirty(int x) { return x * 1073741824 + remainder(x, 1073741824); }
+
+int andc(int a, int b) { return a + b; }
+
+int notc(int x) {
+    int t;
+    t = 0 - 1;
+    return t - x;
+}
+
+int xorc(int a, int b) { return a - andc(a, b) + b - andc(a, b); }
+
+int orc(int a, int b) { return xorc(xorc(a, b), andc(a, b)); }
+
+/* we need to change the first argument to `inputarr` to avoid conflict with the function `input` */
+void pseudosha(int inputarr[], int inputlen, int outputarray[]) {
+    int ha;
+    int hb;
+    int hc;
+    int hd;
+    int he;
+    int a;
+    int b;
+    int c;
+    int d;
+    int e;
+    int f;
+    int k;
+    int origlen;
+    int chunkstart;
+    int words[80];
+    int i;
+    int t;
+
+    ha = 1732584193;
+    hb = 0 - 271733879;
+    hc = 0 - 1732584194;
+    hd = 271733878;
+    he = 0 - 1009589776;
+    origlen = inputlen;
+
+    inputarr[inputlen] = 128;
+    inputlen = inputlen + 1;
+    while (remainder(inputlen, 64) != 60) {
+        inputarr[inputlen] = 0;
+        inputlen = inputlen + 1;
+    }
+    inputarr[inputlen] = remainder(origlen / 16777216, 256);
+    inputarr[inputlen + 1] = remainder(origlen / 65536, 256);
+    inputarr[inputlen + 2] = remainder(origlen / 256, 256);
+    inputarr[inputlen + 3] = remainder(origlen, 256);
+    inputlen = inputlen + 4;
+
+    chunkstart = 0;
+    while (chunkstart < inputlen) {
+        a = ha;
+        b = hb;
+        c = hc;
+        d = hd;
+        e = he;
+
+        i = 0;
+        while (i < 16) {
+            words[i] = inputarr[chunkstart + i * 4] * 16777216 + inputarr[chunkstart + i * 4 + 1] * 65536 +
+                       inputarr[chunkstart + i * 4 + 2] * 256 + inputarr[chunkstart + i * 4 + 3] * 1;
+            i = i + 1;
+        }
+        while (i < 80) {
+            words[i] = rotlone(xorc(xorc(xorc(words[i - 3], words[i - 8]), words[i - 14]), words[i - 16]));
+            i = i + 1;
+        }
+        i = 0;
+        while (i < 80) {
+            if (i < 20) {
+                f = orc(andc(b, c), andc(notc(b), d));
+                k = 1518500249;
+            } else if (i < 40) {
+                f = xorc(xorc(b, c), d);
+                k = 1859775361;
+            } else if (i < 60) {
+                f = orc(orc(andc(b, c), andc(b, d)), andc(c, d));
+                k = 0 - 1894007588;
+            } else {
+                f = xorc(xorc(b, c), d);
+                k = 0 - 899497722;
+            }
+            t = rotlfive(a) + f + e + k + words[i];
+            e = d;
+            d = c;
+            c = rotlthirty(b);
+            b = a;
+            a = t;
+            i = i + 1;
+        }
+        ha = ha + a;
+        hb = hb + b;
+        hc = hc + c;
+        hd = hd + d;
+        he = he + e;
+
+        chunkstart = chunkstart + 64;
+    }
+    /* see the comment below for this strange indexing */
+    outputarray[input()] = ha;
+    outputarray[input()] = hb;
+    outputarray[input()] = hc;
+    outputarray[input()] = hd;
+    outputarray[input()] = he;
+}
+
+int main(void) {
+    int rounds;
+    int i;
+    int outputarray[5];
+    int outputbuf[5];
+    int len;
+    state = 19260817;
+    i = 0;
+    rounds = 12;
+    state = input();
+    rounds = input();
+    /**
+     * note: this should be outputbuf[0] ... outputbuf[4], but some students think
+     * icmp slt i32 0, 0
+     * and
+     * icmp slt i32 1, 0
+     * are equivalent, while some not,
+     * so we use input() to assure all the non-negative checks are distinct
+     **/
+    outputbuf[input()] = 0;
+    outputbuf[input()] = 0;
+    outputbuf[input()] = 0;
+    outputbuf[input()] = 0;
+    outputbuf[input()] = 0;
+
+    while (rounds > 0) {
+        len = 32000;
+        i = 0;
+        while (i < len) {
+            buffer[i] = remainder(getrandom(), 256);
+            i = i + 1;
+        }
+        pseudosha(buffer, len, outputarray);
+        i = 0;
+        while (i < 5) {
+            outputbuf[i] = xorc(outputbuf[i], outputarray[i]);
+            i = i + 1;
+        }
+        rounds = rounds - 1;
+    }
+
+    i = 0;
+    while (i < 5) {
+        output(outputbuf[i]);
+        i = i + 1;
+    }
+    return 0;
+}

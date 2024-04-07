@@ -1,0 +1,45 @@
+int one(void) { return 1; }
+int main(void) {
+    int a;
+    int b;
+    int c;
+    int d;
+    int e;
+    int i;
+    int n;
+    float f;
+
+    a = input();
+    b = input();
+    i = n = c = d = e = 0;
+    f = 0.0;
+    if (a > b) {
+        f = input() / 2.0;
+        c = f + 8;
+        outputFloat(c * 0.01);
+        /**
+         * note: this was supposed to be a constant (eg. d = 23)
+         * but the documentation over-constrained
+         * so we have to relax a little bit in this case
+         **/
+        d = input();
+        e = c / d;
+    } else if (a < b - 10) {
+        c = d = one();
+        e = c / d;
+    } else {
+        n = input();
+        i = 0;
+        c = d = one() + one();
+        e = c / d;
+        while (i < n) {
+            c = d = one() * one();
+            e = c / d;
+            output(i);
+            i = i + 1;
+        }
+    }
+    outputFloat(e);
+    output(c / d);
+    return 0;
+}

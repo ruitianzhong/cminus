@@ -1,0 +1,20 @@
+int main(void) {
+    int i;
+    int j;
+    int sum;
+    i = 0;
+    j = 0;
+    sum = 0;
+    while (i < 10) {
+        j = 0;
+        while (j < 5) {
+            /* i+1 in this block are redundant */
+            sum = sum + (i + 1) * (i + 1) * (j + 1) * (j + 1);
+            j = j + 1;
+        }
+        /* but not this one */
+        i = i + 1;
+    }
+    output(sum);
+    return 0;
+}

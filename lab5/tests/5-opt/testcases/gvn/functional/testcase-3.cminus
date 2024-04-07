@@ -1,0 +1,19 @@
+/* c and d are redundant, a and b is not redundant */
+int main(void) {
+    int a;
+    int b;
+    int c;
+    int d;
+    if (input() > input()) {
+        a = input();
+        b = a + a;
+        c = a + b;
+    } else {
+        a = input();
+        b = a;
+        c = a + b;
+    }
+    output(c);
+    d = a + b;
+    output(d);
+}
